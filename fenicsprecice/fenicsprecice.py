@@ -229,7 +229,7 @@ class Adapter:
 
         return copy.deepcopy(read_data)
 
-    def write_data(self, write_function):
+    def write_data(self, write_function, write_data_ready = None):
         """
         Writes data to preCICE. Depending on the dimensions of the simulation (2D-3D Coupling, 2D-2D coupling or
         Scalar/Vector write function) write_function is first converted into a format needed for preCICE.
@@ -260,7 +260,10 @@ class Adapter:
 
         write_function_type = determine_function_type(write_function, self._fenics_dims)
         assert (write_function_type in list(FunctionType))
-        write_data = convert_fenics_to_precice(write_function, self._owned_vertices.get_local_ids())
+        if write_data_ready is None:
+            write_data = convert_fenics_to_precice(write_function, self._owned_vertices.get_local_ids())
+        else:
+            write_data = write_data_ready
         if write_function_type is FunctionType.SCALAR:
             assert (write_function.function_space().num_sub_spaces() == 0)
             self._interface.write_block_scalar_data(write_data_id, self._precice_vertex_ids, write_data)
